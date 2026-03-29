@@ -17,6 +17,7 @@
     <node pkg="controller_manager" exec="spawner" args="agvBase_controller" />
     <node pkg="controller_manager" exec="spawner" args="arm1_controller" />
     <node pkg="controller_manager" exec="spawner" args="arm2_controller" />
+    <node pkg="camera" exec="camera_node" />
 
     <include file="$(find-pkg-share agv_moveit_config)/launch/move_group.launch.py" />
 
