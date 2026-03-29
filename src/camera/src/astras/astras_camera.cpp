@@ -1,4 +1,4 @@
-#include "camera/astras_camera.hpp"
+#include "camera/astras/astras_camera.hpp"
 
 #include <utility>
 

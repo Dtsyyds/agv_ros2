@@ -1,9 +1,9 @@
-#include "camera/astras_node.hpp"
+#include "camera/nodes/astras_node.hpp"
 
 #include <cv_bridge/cv_bridge.hpp>
 #include <sensor_msgs/msg/camera_info.hpp>
 
-#include "camera/astras_camera.hpp"
+#include "camera/astras/astras_camera.hpp"
 
 namespace camera {
 

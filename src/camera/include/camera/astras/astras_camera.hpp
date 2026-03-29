@@ -5,7 +5,7 @@
 
 #include <OpenNI.h>
 
-#include "camera/camera_interface.hpp"
+#include "camera/interface/camera_interface.hpp"
 
 namespace camera {
 

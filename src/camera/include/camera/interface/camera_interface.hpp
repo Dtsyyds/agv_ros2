@@ -2,7 +2,7 @@
 
 #include <functional>
 
-#include "camera/camera_types.hpp"
+#include "camera/data/camera_types.hpp"
 
 namespace camera {
 

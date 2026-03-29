@@ -5,7 +5,7 @@
 #include <rclcpp/rclcpp.hpp>
 #include <image_transport/image_transport.hpp>
 
-#include "camera/camera_interface.hpp"
+#include "camera/interface/camera_interface.hpp"
 
 namespace camera {
 

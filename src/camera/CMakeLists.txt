@@ -23,9 +23,9 @@ include_directories(${CMAKE_CURRENT_SOURCE_DIR}/include)
 link_directories(${ORBBEC_SDK_PATH}/libs)
 
 add_executable(camera_node
-  src/camera_node.cpp
-  src/astras_camera.cpp
-  src/astras_node.cpp
+  src/nodes/camera_node.cpp
+  src/astras/astras_camera.cpp
+  src/nodes/astras_node.cpp
 )
 ament_target_dependencies(camera_node 
     rclcpp 

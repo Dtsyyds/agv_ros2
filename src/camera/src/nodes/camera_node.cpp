@@ -2,7 +2,7 @@
 
 #include <rclcpp/rclcpp.hpp>
 
-#include "camera/astras_node.hpp"
+#include "camera/nodes/astras_node.hpp"
 
 /**
  * @brief camera 包入口：启动 AstraSNode 并进入 spin。
