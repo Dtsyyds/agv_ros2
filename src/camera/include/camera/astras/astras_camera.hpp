@@ -1,6 +1,7 @@
 #pragma once
 
 #include <memory>
+#include <optional>
 #include <string>
 
 #include <OpenNI.h>
@@ -49,6 +50,18 @@ public:
      * @brief 获取最近一次错误信息。
      */
     const std::string& lastError() const;
+
+    /**
+     * @brief 获取彩色相机的内参。
+     * @return 如果成功获取返回 CameraIntrinsics，否则返回 std::nullopt。
+     */
+    std::optional<CameraIntrinsics> getColorIntrinsics() override;
+
+    /**
+     * @brief 获取深度相机的内参。
+     * @return 如果成功获取返回 CameraIntrinsics，否则返回 std::nullopt。
+     */
+    std::optional<CameraIntrinsics> getDepthIntrinsics() override;
 
 private:
     /**

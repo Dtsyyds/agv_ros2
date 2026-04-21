@@ -11,6 +11,9 @@ find_package(rclcpp REQUIRED)
 find_package(sensor_msgs REQUIRED)
 find_package(cv_bridge REQUIRED)
 find_package(image_transport REQUIRED)
+find_package(tf2 REQUIRED)
+find_package(tf2_ros REQUIRED)
+find_package(geometry_msgs REQUIRED)
 
 # Orbbec SDK path
 set(ORBBEC_SDK_PATH ${CMAKE_CURRENT_SOURCE_DIR}/sdk)
@@ -32,6 +35,9 @@ ament_target_dependencies(camera_node
     sensor_msgs 
     cv_bridge 
     image_transport
+    tf2
+    tf2_ros
+    geometry_msgs
 )
 # 4. 链接 OpenCV 和 Orbbec 的 OpenNI2 库
 # 使用绝对路径链接库，可以避免一些链接搜索问题
@@ -51,5 +57,14 @@ set_target_properties(camera_node PROPERTIES
 install(TARGETS camera_node
     DESTINATION lib/${PROJECT_NAME})
 
+# 安装配置文件
+install(DIRECTORY config/
+    DESTINATION share/${PROJECT_NAME}/config
+)
+
+# 安装 launch 文件
+install(DIRECTORY launch/
+    DESTINATION share/${PROJECT_NAME}/launch
+)
 
 ament_package()

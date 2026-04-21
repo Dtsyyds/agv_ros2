@@ -1,6 +1,7 @@
 #pragma once
 
 #include <functional>
+#include <optional>
 
 #include "camera/data/camera_types.hpp"
 
@@ -43,6 +44,18 @@ public:
      * 相机实现应在采集线程/回调线程中调用该回调，回调内尽量避免长时间阻塞。
      */
     virtual void setFrameCallback(FrameCallback cb) = 0;
+
+    /**
+     * @brief 获取彩色相机的内参。
+     * @return 如果成功获取返回 CameraIntrinsics，否则返回 std::nullopt。
+     */
+    virtual std::optional<CameraIntrinsics> getColorIntrinsics() = 0;
+
+    /**
+     * @brief 获取深度相机的内参。
+     * @return 如果成功获取返回 CameraIntrinsics，否则返回 std::nullopt。
+     */
+    virtual std::optional<CameraIntrinsics> getDepthIntrinsics() = 0;
 };
 
 }

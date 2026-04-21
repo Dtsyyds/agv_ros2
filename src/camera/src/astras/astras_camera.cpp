@@ -1,6 +1,10 @@
 #include "camera/astras/astras_camera.hpp"
 
+#include <cstring>
 #include <utility>
+
+#include <OniCTypes.h>
+#include <PS1080.h>
 
 namespace camera {
 
@@ -205,7 +209,7 @@ bool AstraSCamera::setupStream(openni::VideoStream& stream,
 /**
  * @brief 停止视频流并注销监听器，释放 OpenNI stream 资源。
  */
-void AstraSCamera::stopStream(openni::VideoStream& stream, openni::VideoStream::NewFrameListener* listener) {       
+void AstraSCamera::stopStream(openni::VideoStream& stream, openni::VideoStream::NewFrameListener* listener) {
     if (listener != nullptr) {
         stream.removeNewFrameListener(listener);
     }
@@ -214,6 +218,113 @@ void AstraSCamera::stopStream(openni::VideoStream& stream, openni::VideoStream::
         stream.stop();
         stream.destroy();
     }
+}
+
+/**
+ * @brief 从设备获取相机参数结构体。
+ *
+ * 使用 OBCameraParamsData 结构体（定义在 PS1080.h）：
+ * - depthRes: 深度分辨率
+ * - colorRes: 彩色分辨率
+ * - params: OBCameraParams 内参数据
+ *   - l_intr_p[4]: 左相机/深度相机内参 [fx, fy, cx, cy]
+ *   - r_intr_p[4]: 右相机/彩色相机内参 [fx, fy, cx, cy]
+ *   - l_k[5]: 左相机畸变系数 [k1, k2, p1, p2, k3]
+ *   - r_k[5]: 右相机畸变系数 [k1, k2, p1, p2, k3]
+ *
+ * 注意：需要使用 OBEXTENSION_ID_CAM_PARAMS (14) 获取参数
+ */
+static std::optional<OBCameraParams> getCameraParams(openni::Device& device) {
+    // 定义与 SDK 匹配的分辨率枚举
+    enum XnCameraParamsDepthRes {
+        XN_CAMERA_PARAMS_DEPTH_RES_1024_768 = 0,
+        XN_CAMERA_PARAMS_DEPTH_RES_512_384 = 1,
+        XN_CAMERA_PARAMS_DEPTH_RES_640_480 = 2,
+        XN_CAMERA_PARAMS_DEPTH_RES_320_240 = 3,
+        XN_CAMERA_PARAMS_DEPTH_RES_160_120 = 4,
+        XN_CAMERA_PARAMS_DEPTH_RES_480_360 = 5,
+        XN_CAMERA_PARAMS_DEPTH_RES_240_180 = 6,
+        XN_CAMERA_PARAMS_DEPTH_RES_640_360 = 7,
+        XN_CAMERA_PARAMS_DEPTH_RES_320_180 = 8,
+    };
+
+    enum XnCameraParamsColorRes {
+        XN_CAMERA_PARAMS_COLOR_RES_DEFAULT = 0,
+        XN_CAMERA_PARAMS_COLOR_RES_640_360 = 1,
+        XN_CAMERA_PARAMS_COLOR_RES_320_180 = 2,
+    };
+
+    struct OBCameraParamsData {
+        XnCameraParamsDepthRes depthRes;
+        XnCameraParamsColorRes colorRes;
+        OBCameraParams params;
+    };
+
+    OBCameraParamsData data;
+    std::memset(&data, 0, sizeof(data));
+    int data_size = sizeof(data);
+
+    // OBEXTENSION_ID_CAM_PARAMS = 14
+    openni::Status rc = device.getProperty(14, &data, &data_size);
+    if (rc != openni::STATUS_OK) {
+        return std::nullopt;
+    }
+
+    return data.params;
+}
+
+/**
+ * @brief 获取彩色相机的内参。
+ */
+std::optional<CameraIntrinsics> AstraSCamera::getColorIntrinsics() {
+    if (!device_.isValid()) {
+        return std::nullopt;
+    }
+
+    auto params_opt = getCameraParams(device_);
+    if (!params_opt.has_value()) {
+        return std::nullopt;
+    }
+
+    const OBCameraParams& params = params_opt.value();
+    CameraIntrinsics intrinsics;
+    intrinsics.fx = static_cast<double>(params.r_intr_p[0]);
+    intrinsics.fy = static_cast<double>(params.r_intr_p[1]);
+    intrinsics.cx = static_cast<double>(params.r_intr_p[2]);
+    intrinsics.cy = static_cast<double>(params.r_intr_p[3]);
+    intrinsics.distortion_coeffs = {static_cast<double>(params.r_k[0]),
+                                    static_cast<double>(params.r_k[1]),
+                                    static_cast<double>(params.r_k[2]),
+                                    static_cast<double>(params.r_k[3]),
+                                    static_cast<double>(params.r_k[4])};
+    return intrinsics;
+}
+
+/**
+ * @brief 获取深度相机的内参。
+ */
+std::optional<CameraIntrinsics> AstraSCamera::getDepthIntrinsics() {
+    if (!device_.isValid()) {
+        return std::nullopt;
+    }
+
+    auto params_opt = getCameraParams(device_);
+    if (!params_opt.has_value()) {
+        return std::nullopt;
+    }
+
+    const OBCameraParams& params = params_opt.value();
+    CameraIntrinsics intrinsics;
+    intrinsics.fx = static_cast<double>(params.l_intr_p[0]);
+    intrinsics.fy = static_cast<double>(params.l_intr_p[1]);
+    intrinsics.cx = static_cast<double>(params.l_intr_p[2]);
+    intrinsics.cy = static_cast<double>(params.l_intr_p[3]);
+    intrinsics.distortion_coeffs = {static_cast<double>(params.l_k[0]),
+                                    static_cast<double>(params.l_k[1]),
+                                    static_cast<double>(params.l_k[2]),
+                                    static_cast<double>(params.l_k[3]),
+                                    static_cast<double>(params.l_k[4])};
+    return intrinsics;
 }
 
 } 
